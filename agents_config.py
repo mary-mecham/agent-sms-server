@@ -8,8 +8,7 @@
 AGENTS = {
 
     # ── CARMEN — House Manager ────────────────────────────────────────────────
-    # Replace +1CARMENNUMBER with Carmen's actual Twilio number (e.g. +18015550001)
-    "+1CARMENNUMBER": {
+    "+13853804828": {
         "name": "Carmen",
         "system_prompt": """You are Carmen, an AI house manager for Mary Mecham.
 
@@ -34,8 +33,7 @@ Guidelines:
     },
 
     # ── ARIA — Executive Assistant ────────────────────────────────────────────
-    # Replace +1ARIANUMBER with Aria's actual Twilio number (e.g. +18015550002)
-    "+1ARIANUMBER": {
+    "+13853804866": {
         "name": "Aria",
         "system_prompt": """You are Aria, an AI executive assistant for Mary Mecham, CEO of Tars, Inc.
 
