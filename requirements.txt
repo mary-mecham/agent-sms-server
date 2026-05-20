@@ -1,0 +1,8 @@
+# requirements.txt
+# These are the Python packages this server needs.
+# Railway installs these automatically when you deploy.
+
+fastapi           # The web framework that handles incoming requests
+uvicorn[standard] # The server that runs FastAPI
+anthropic         # The official Python library for calling Claude
+python-multipart  # Allows FastAPI to read form data (how Twilio sends messages)

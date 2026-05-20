@@ -1,0 +1,8 @@
+# .gitignore
+# Files listed here will NOT be uploaded to GitHub.
+# This is critical — .env contains your secret API keys.
+
+.env
+__pycache__/
+*.pyc
+.DS_Store
