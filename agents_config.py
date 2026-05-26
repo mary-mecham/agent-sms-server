@@ -11,6 +11,7 @@ AGENTS = {
     # Delete this block and add your own agents below.
     "+1XXXXXXXXXX": {
         "name": "AgentName",
+        "allowed_numbers": ["+1YOURCELLPHONE"],  # Only these numbers can text this agent
         "system_prompt": """You are [Agent Name], [role] for [Your Name].
 
 Your job is to help with [key responsibilities].
@@ -33,6 +34,7 @@ Guidelines:
     #
     # "+1PHONENUMBER": {
     #     "name": "AgentName",
+    #     "allowed_numbers": ["+1YOURCELLPHONE"],  # Add multiple numbers if needed: ["+1111", "+1222"]
     #     "system_prompt": """You are [Name], [role description].
     #
     # Your job is to...

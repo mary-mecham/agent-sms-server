@@ -71,15 +71,18 @@ This downloads all the server code you need. You won't need to write any code �
 
 ---
 
-## Step 4 — Configure Your Agents
+## Step 4 — Write Your Agent Profiles
 
 Open **agents_config.py** in any text editor. This is the only file you'll regularly edit.
 
-For each agent you want to connect, add an entry:
+You'll write one entry per agent. **Leave the phone number as a placeholder for now** — you'll buy Twilio numbers in Step 7 and fill them in during Step 8.
+
+For each agent, add an entry like this:
 
 ```python
-"+1YOURNUMBER": {
+"+1XXXXXXXXXX": {
     "name": "AgentName",
+    "allowed_numbers": ["+1YOURCELLPHONE"],
     "system_prompt": """You are [Agent Name], [role] for [Business Owner Name].
 
 Your job is to help with [key responsibilities].
@@ -96,6 +99,10 @@ Guidelines:
 - Never make up information — ask if you don't know"""
 }
 ```
+
+> **Note on the two phone numbers:**
+> - `"+1XXXXXXXXXX"` (the key) is the **agent's** Twilio number — you'll replace this in Step 8 after buying it in Step 7.
+> - `allowed_numbers` is **your** personal cell number — the only number allowed to text this agent. Anyone else who texts the number will be blocked. You can add multiple numbers if needed: `["+11112223333", "+14445556666"]`
 
 **Writing a good system prompt:**
 - Be specific about the agent's role and what they can help with

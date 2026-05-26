@@ -46,6 +46,12 @@ async def receive_sms(
         # This number isn't in agents_config.py yet
         return sms_reply(f"This number isn't connected to an agent yet. Add it to agents_config.py.")
 
+    # Check if the sender is authorized (whitelist)
+    allowed_numbers = agent.get("allowed_numbers")
+    if allowed_numbers and From not in allowed_numbers:
+        print(f"[{agent['name']}] Blocked unauthorized sender: {From}")
+        return sms_reply("Sorry, this number is not authorized to use this agent.")
+
     print(f"[{agent['name']}] Message from {From}: {Body}")
 
     # Send the message to Claude with this agent's system prompt
