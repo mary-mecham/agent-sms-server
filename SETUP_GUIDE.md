@@ -63,7 +63,7 @@ One server handles all your agents. Adding a new agent just means buying a new p
 Clone the template repository to your computer:
 
 ```
-git clone https://github.com/mybusinessgenie-ai/agent-sms-server.git
+git clone https://github.com/mary-mecham/agent-sms-server.git
 cd agent-sms-server
 ```
 
