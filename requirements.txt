@@ -1,6 +1,6 @@
 # requirements.txt
 # These are the Python packages this server needs.
-# Railway installs these automatically when you deploy.
+# Render installs these automatically when you deploy.
 
 fastapi           # The web framework that handles incoming requests
 uvicorn[standard] # The server that runs FastAPI

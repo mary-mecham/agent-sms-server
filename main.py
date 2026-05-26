@@ -99,5 +99,5 @@ def sms_reply(message: str) -> Response:
 if __name__ == "__main__":
     import uvicorn
     # Run locally with: python main.py
-    # Railway uses the Procfile instead, but this lets you test locally too
+    # Render uses the Procfile instead, but this lets you test locally too
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))

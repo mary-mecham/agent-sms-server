@@ -1,215 +1,270 @@
-# Agent SMS Server — Setup Guide
+# Give Your AI Agent a Phone Number
+### SMS Channel Setup Guide
 
-This guide walks you through deploying your SMS agent server from scratch. By the end, you'll be able to text a phone number and have Carmen (or Aria, or any agent) respond and take action.
+This guide walks you through connecting a phone number to any AI agent in your org chart so you can text it commands and get responses back.
 
-**Time:** About 45–60 minutes the first time.  
-**What you'll need:** A credit card for Twilio (~$1/mo per number) and your Anthropic API key.
+By the end, you'll be able to text your agent things like:
+- "Draft an email to my client about tomorrow's meeting"
+- "Add oat milk to the grocery list"
+- "What's on my calendar today?"
+
+**Time:** About 60–90 minutes the first time. Much faster for each agent after that.  
+**Cost:** ~$1.15/month per phone number (Twilio) + $7/month for your server (Render Starter) + small Anthropic API usage fees (fractions of a cent per message)
 
 ---
 
-## How This Works (Big Picture)
+## How It Works
 
 ```
-You text Carmen's number
-      ↓
+You text your agent's number
+        ↓
 Twilio receives it and forwards it to your server
-      ↓
-Your server (running on Railway) asks Claude
-      ↓
-Claude responds as Carmen
-      ↓
+        ↓
+Your server identifies which agent owns that number
+        ↓
+Claude responds as that agent
+        ↓
 You get a text back
 ```
+
+One server handles all your agents. Adding a new agent just means buying a new phone number and adding a few lines to a config file.
+
+---
+
+## What You'll Need
+
+- A **GitHub account** (free) — stores your code
+- A **Render account** (free to start, $7/mo recommended for production) — runs your server
+- A **Twilio account** — provides phone numbers (~$1.15/mo per number)
+- An **Anthropic API key** — powers your agents (pay-as-you-go, very cheap for SMS)
+- A **Privacy Policy page** — required for Twilio A2P registration (a simple page on your website works)
 
 ---
 
 ## Step 1 — Create a GitHub Account
 
-GitHub is where your code lives. Railway (your server host) reads from GitHub to deploy.
-
 1. Go to **github.com** and click **Sign up**
-2. Choose a username (something professional — clients will see this)
-3. Verify your email address
+2. Choose a username
+3. Verify your email
 4. Choose the **Free** plan
 
-That's it. You now have a GitHub account.
+---
+
+## Step 2 — Install Git on Your Computer
+
+1. Open **Terminal** (Mac: press `Cmd + Space`, type "Terminal")
+2. Type `git --version` and press Enter
+3. If you see a version number, you're set. If not, follow the prompt to install developer tools.
 
 ---
 
-## Step 2 — Install Git on Your Mac
+## Step 3 — Get the Agent SMS Server Code
 
-Git is the tool that sends your code from your computer up to GitHub.
+Clone the template repository to your computer:
 
-1. Open **Terminal** (press `Cmd + Space`, type "Terminal", hit Enter)
-2. Type this and press Enter:
-   ```
-   git --version
-   ```
-3. If you see a version number (like `git version 2.39.0`), you're already set — skip to Step 3.
-4. If you see a prompt to install developer tools, click **Install** and wait for it to finish.
-
----
-
-## Step 3 — Put Your Project on GitHub
-
-1. In Terminal, navigate to your project folder:
-   ```
-   cd "/Users/tars/Documents/Claude/Projects/AI Agents/agent-sms-server"
-   ```
-
-2. Initialize it as a Git repository:
-   ```
-   git init
-   git add .
-   git commit -m "Initial commit — agent SMS server"
-   ```
-
-3. Go to **github.com**, click the **+** icon (top right) → **New repository**
-4. Name it `agent-sms-server`
-5. Keep it **Private**
-6. Do NOT check "Add a README" (you already have files)
-7. Click **Create repository**
-
-8. GitHub will show you a page with commands. Copy and run the two lines that look like:
-   ```
-   git remote add origin https://github.com/YOURUSERNAME/agent-sms-server.git
-   git push -u origin main
-   ```
-
-9. It will ask for your GitHub username and password. For the password, use a **Personal Access Token** (not your actual password):
-   - Go to github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)
-   - Click **Generate new token (classic)**
-   - Give it a name, set expiration to "No expiration", check the **repo** checkbox
-   - Copy the token and paste it as your password
-
-Your code is now on GitHub. ✅
-
----
-
-## Step 4 — Deploy to Railway
-
-Railway is where your server runs 24/7.
-
-1. Go to **railway.app** and click **Login with GitHub**
-2. Authorize Railway to access your GitHub
-3. Click **New Project** → **Deploy from GitHub repo**
-4. Select `agent-sms-server`
-5. Railway will detect it's a Python project and start deploying automatically
-
-**Add your API key:**
-1. In your Railway project, click on your service
-2. Click the **Variables** tab
-3. Click **New Variable**
-4. Name: `ANTHROPIC_API_KEY`
-5. Value: your Anthropic API key (from console.anthropic.com → API Keys)
-6. Click **Add**
-
-Railway will automatically redeploy with the key added.
-
-**Get your server URL:**
-1. Click the **Settings** tab in your Railway service
-2. Under **Domains**, click **Generate Domain**
-3. You'll get a URL like `agent-sms-server-production.up.railway.app` — copy this
-
-**Test it's working:**  
-Open that URL in your browser. You should see:
-```json
-{"status": "running", "agents": ["Carmen", "Aria"], "message": "2 agent(s) connected: Carmen, Aria"}
+```
+git clone https://github.com/mybusinessgenie-ai/agent-sms-server.git
+cd agent-sms-server
 ```
 
-Your server is live. ✅
+This downloads all the server code you need. You won't need to write any code — just edit the config file in the next step.
 
 ---
 
-## Step 5 — Get Twilio Phone Numbers
+## Step 4 — Configure Your Agents
 
-1. Go to **twilio.com** and create a free account
-2. Verify your phone number during signup
-3. Once in the dashboard, go to **Phone Numbers → Manage → Buy a number**
-4. Search for numbers in your area code
-5. Buy one number for Carmen (~$1.15/month)
-6. Repeat to buy a second number for Aria
+Open **agents_config.py** in any text editor. This is the only file you'll regularly edit.
 
-**Save these numbers** — you'll need them in the next step.
+For each agent you want to connect, add an entry:
 
----
+```python
+"+1YOURNUMBER": {
+    "name": "AgentName",
+    "system_prompt": """You are [Agent Name], [role] for [Business Owner Name].
 
-## Step 6 — Update agents_config.py With Your Real Numbers
+Your job is to help with [key responsibilities].
 
-1. Open the file `agents_config.py` in your project folder
-2. Replace `+1CARMENNUMBER` with Carmen's actual Twilio number (e.g. `+18015550001`)
-3. Replace `+1ARIANUMBER` with Aria's actual Twilio number
-4. Save the file
+You can help with things like:
+- [Task type 1]
+- [Task type 2]
+- [Task type 3]
 
-Push the update to GitHub:
+Guidelines:
+- You're responding via SMS, so keep replies concise and clear
+- Always confirm what action you took
+- If you need more information, ask one clear question
+- Never make up information — ask if you don't know"""
+}
 ```
-cd "/Users/tars/Documents/Claude/Projects/AI Agents/agent-sms-server"
+
+**Writing a good system prompt:**
+- Be specific about the agent's role and what they can help with
+- Mention key people, tools, or context the agent should know about
+- Keep the tone appropriate for how you want to interact with them
+- You can always update this later — just edit the file and push to GitHub
+
+---
+
+## Step 5 — Push to Your Own GitHub Repository
+
+Create a new **private** repository on github.com called `agent-sms-server`, then connect it:
+
+```
+git remote set-url origin https://github.com/YOURUSERNAME/agent-sms-server.git
+git push -u origin main
+```
+
+If asked for a password, use a Personal Access Token (not your GitHub password):
+- GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token → check **repo** → copy it
+
+**Tip:** If you run into auth issues, install the GitHub CLI:
+```
+brew install gh
+gh auth login
+```
+Then push normally.
+
+---
+
+## Step 6 — Deploy to Render
+
+1. Go to **render.com** and sign up with GitHub
+2. Click **New → Web Service**
+3. Select your `agent-sms-server` repository
+4. Render will detect Python automatically. Fill in:
+   - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type:** Free (for testing) or Starter at $7/mo (recommended for production — prevents spin-down delays)
+5. Under **Environment Variables**, add:
+   - Name: `ANTHROPIC_API_KEY`
+   - Value: your Anthropic API key (from console.anthropic.com → API Keys)
+6. Click **Deploy Web Service**
+
+**Wait 2–3 minutes** for the build to complete. When it says "Live," copy your Render URL (e.g. `https://agent-sms-server.onrender.com`).
+
+**Test it:** Open your Render URL in a browser. You should see a JSON message listing your connected agents.
+
+**Note on the Free tier:** Free Render instances spin down after 15 minutes of inactivity, which means the first text after a quiet period can take 30–60 seconds to get a response (and may time out). For reliable SMS, use the Starter plan ($7/mo) or set up UptimeRobot (free) to ping your URL every 5 minutes.
+
+---
+
+## Step 7 — Get Twilio Phone Numbers
+
+1. Go to **twilio.com** and create an account
+2. Verify your phone number
+3. Go to **Phone Numbers → Manage → Buy a number**
+4. Buy one number per agent (~$1.15/month each)
+
+Save each number — you'll need them in the next step.
+
+---
+
+## Step 8 — Add Phone Numbers to Your Config
+
+Open `agents_config.py` and replace the placeholder numbers with your real Twilio numbers (format: `+1XXXXXXXXXX`).
+
+Push the update:
+```
 git add agents_config.py
-git commit -m "Add real Twilio phone numbers"
+git commit -m "Add Twilio phone numbers"
 git push
 ```
 
-Railway will automatically redeploy within about 30 seconds.
+Render will redeploy automatically within 30 seconds.
 
 ---
 
-## Step 7 — Connect Twilio to Your Server
+## Step 9 — Connect Twilio to Your Server
 
-This tells Twilio to forward incoming texts to your Railway server.
-
-For **each** Twilio number:
+For **each** phone number:
 1. In Twilio, go to **Phone Numbers → Manage → Active Numbers**
-2. Click on the phone number
+2. Click the number
 3. Scroll to **Messaging Configuration**
-4. Under "A message comes in", set:
+4. Set "A message comes in" to:
    - **Webhook**
-   - URL: `https://YOUR-RAILWAY-URL.up.railway.app/webhook`
+   - URL: `https://YOUR-RENDER-URL.onrender.com/webhook`
    - Method: **HTTP POST**
 5. Click **Save configuration**
 
-Do this for both Carmen's number and Aria's number — they all point to the same URL.
+---
+
+## Step 10 — Complete A2P 10DLC Registration
+
+US carriers require all businesses sending SMS from local phone numbers to register. This prevents your messages from being blocked or filtered.
+
+**What you'll need before you start:**
+- Legal business name
+- EIN (Employer Identification Number)
+- Business address
+- Website URL
+- **Privacy Policy URL** — you must have a live privacy policy page on your website. This is required by carriers and your registration will be rejected without it. A simple page is fine (many website builders have a template).
+- Brief description of your messaging use case
+
+**In Twilio, go to Messaging → Regulatory Compliance → A2P 10DLC → Onboarding**
+
+**Step 1 — Register your brand** (~$4.50 one-time fee, approved within hours)
+- Company type: Private
+- Brand type: Low-Volume Standard (for most businesses)
+- Fill in your business details and EIN
+
+**Step 2 — Register a campaign** (~$15 one-time vetting fee + $1.50–$10/month)
+- Use case: Mixed (covers task management, notifications, and responses)
+- Campaign description: Describe your internal agent messaging use case
+- Sample messages: Provide 5 realistic examples of what your agent will send
+- Opt-in method: Describe that the business owner initiates contact by texting the number themselves
+- Privacy Policy URL: paste the URL to your privacy policy page
+
+**Opt-in language that works well:**
+> "The sole user of this messaging campaign is the business owner. The business owner opts in by personally configuring and purchasing the dedicated phone number for internal business use. The owner initiates each conversation by texting the number themselves, which constitutes explicit opt-in consent. All messages are exchanged exclusively between the business owner and their own internal business management system. No third parties send or receive messages. No marketing messages are sent."
+
+**Step 3 — Add phone numbers to your campaign**
+- Go to the Linked Messaging Service → Sender Pool → Add Senders
+- Add all numbers you want to use
+
+**Approval timeline:** Brand registration is typically instant. Campaign approval takes 2–5 business days (sometimes up to 2–3 weeks). You'll receive an email when approved.
 
 ---
 
-## Step 8 — Test It
+## Step 11 — Test It
 
-1. Text Carmen's Twilio number from your phone: `Email Eden's school and ask that she be excused today`
-2. Within a few seconds, you should get a reply from Carmen
+Once your campaign is approved, text your agent's number from your phone. You should receive a response within 5–10 seconds.
 
-If it works — you're done! 🎉
-
----
-
-## Troubleshooting
-
-**No reply at all:**
-- Check Railway logs (click your service → **Logs** tab) for error messages
-- Make sure your Twilio webhook URL is exactly right (no trailing slash issues)
-- Make sure your ANTHROPIC_API_KEY variable is set in Railway
-
-**"This number isn't connected to an agent yet":**
-- Double-check the phone number in `agents_config.py` matches the Twilio number exactly, including the +1
-
-**"Authentication error" in Railway logs:**
-- Your ANTHROPIC_API_KEY is wrong or missing — check it in Railway Variables
+If something doesn't work, check:
+1. **Render logs** — shows whether the message was received and what response was generated
+2. **Twilio Message Logs** — shows whether the SMS was delivered (Messaging → Try it out → Messaging Logs)
 
 ---
 
-## Adding a New Agent Later
+## Adding More Agents Later
 
 1. Buy a new Twilio number
-2. Open `agents_config.py` and add a new block (copy the template at the bottom of the file)
-3. Push to GitHub — Railway redeploys automatically
-4. Set up the webhook in Twilio for the new number
-5. Done
+2. Add a new entry to `agents_config.py`
+3. Push to GitHub (Render redeploys automatically)
+4. Set the webhook in Twilio for the new number
+5. Add the number to your A2P campaign's Sender Pool
 
 ---
 
-## For Your Clients
+## Common Issues
 
-When you teach this to clients, the steps are exactly the same. The only things that change per client are:
-- Their agent names and system prompts (in `agents_config.py`)
-- Their Twilio phone numbers
-- Their Anthropic API key
+**No response at all:**
+- Check Render logs for errors
+- Verify the Twilio webhook URL is correct (no missing `/webhook` at the end)
+- Make sure `ANTHROPIC_API_KEY` is set in Render environment variables
 
-Everything else — Railway, GitHub, the server code — is identical. You can give clients a copy of this exact repo as a starting template.
+**"This number isn't connected to an agent yet":**
+- The phone number in `agents_config.py` doesn't match the Twilio number exactly — check the `+1` format
+
+**Message received but not delivered to your phone:**
+- A2P 10DLC registration is pending or not completed — this is the most common cause
+- Check Twilio Message Logs for delivery errors
+
+**Campaign rejected during A2P registration:**
+- Make sure your opt-in text explains that the business owner self-initiates by texting the number
+- Make sure your Privacy Policy URL is filled in and the page is live
+- Use the "Fix Campaign" button in Twilio to resubmit — you won't be charged the vetting fee again
+
+**Slow responses (30–60 seconds):**
+- Your Render free instance spun down — upgrade to Starter ($7/mo) or set up UptimeRobot
+
+**"Credit balance too low" error in Render logs:**
+- Add credits to your Anthropic account at console.anthropic.com → Billing
